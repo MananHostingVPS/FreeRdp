@@ -1,0 +1,30 @@
+name: Free Windows RDP with Rufus + ISO
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 360
+    steps:
+      - name: Enable RDP Access
+        run: |
+          Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString "RDPpassword123" -AsPlainText -Force)
+      - name: Download Rufus
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/pbatard/rufus/releases/latest/download/rufus-4.4.exe" -OutFile "$env:USERPROFILE\Desktop\rufus.exe"
+      - name: Download Windows 10 ISO
+        run: |
+          Invoke-WebRequest -Uri "https://software-download.microsoft.com/db/Win10_22H2_English_x64.iso" -OutFile "$env:USERPROFILE\Desktop\Windows10.iso"
+      - name: Show Connection Details
+        run: |
+          ipconfig
+          Write-Host "====================="
+          Write-Host "Username: runneradmin"
+          Write-Host "Password: RDPpassword123"
+          Write-Host "====================="
+      - name: Keep Alive
+        run: |
+          Start-Sleep -Seconds 21600
